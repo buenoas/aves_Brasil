@@ -40,7 +40,7 @@ load_data <- function() {
 }
 
 ui <- fluidPage(
-  titlePanel("Lista de aves do Brasil com sua categoria de ameaça"),
+  titlePanel("Lista de aves do Brasil ameaçadas de extinção"),
   sidebarLayout(
     sidebarPanel(
       selectInput("level", "Nível taxonômico:",
