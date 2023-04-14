@@ -1,0 +1,82 @@
+library(shiny)
+library(dplyr)
+
+# URL para carregar os dados
+url <- "https://raw.githubusercontent.com/buenoas/aves_Brasil/main/2021.07.26%20CBRO%202021%20Zenodo%20Release.csv"
+
+# Função para carregar os dados
+load_data <- function() {
+  
+  data <- read.csv(url, sep = ";", stringsAsFactors = FALSE)
+  
+  # Lista apenas as espécies e subespécies
+  data <- data[which(data$Categoria == "Espécie" | data$Categoria ==  "Subespécie"), ]
+  
+  # Remove algumas colunas
+  data$X. <- NULL
+  data$X.CBRO <- NULL
+  data$Nome.do.táxon..com.autoria. <- NULL
+  data$Totais <- NULL
+  data$Subordem <- NULL
+  data$Infraordem <- NULL
+  data$Parvordem <- NULL
+  data$Superfamília <- NULL
+  data$Notas..português. <- NULL
+  data$Notes..English. <- NULL
+  
+  # Renomeia algumas colunas
+  colnames(data)[colnames(data) == "Categoria"] <- "Nível taxonômico"
+  colnames(data)[colnames(data) == "Nome.do.táxon..sem.autoria."] <- "Táxon"
+  colnames(data)[colnames(data) == "Nome.em.Português"] <- "Nome em português"
+  colnames(data)[colnames(data) == "English.Name"] <- "English name"
+  colnames(data)[colnames(data) == "Espécie"] <- "Epíteto específico"
+  colnames(data)[colnames(data) == "Subespécie"] <- "Epíteto subespecífico"
+  
+  # Adiciona a categoria de ameaca
+  data$`Categoria de ameaça (ICMBio 2022)` <- "Pouco preocupante"
+  
+  return(data)
+  
+}
+
+ui <- fluidPage(
+  titlePanel("Lista de aves do Brasil com sua categoria de ameaça"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("level", "Nível taxonômico:",
+                  choices = c("", "Espécie", "Subespécie")),
+      selectInput("threat", "Categoria de ameaça:",
+                  choices = c("", "Pouco preocupante", "Quase ameaçada", "Vulnerável", "Em perigo", "Criticamente em perigo", "Extinta na natureza", "Extinta"))
+    ),
+    mainPanel(
+      tableOutput("data_table")
+    )
+  )
+)
+
+server <- function(input, output) {
+  
+  data <- reactive({
+    load_data()
+  })
+  
+  filtered_data <- reactive({
+    filtered_data <- data()
+    if (input$level != "") {
+      filtered_data <- filtered_data %>%
+        filter(`Nível taxonômico` == input$level)
+    }
+    if (input$threat != "") {
+      filtered_data <- filtered_data %>%
+        filter(`Categoria de ameaça (ICMBio 2022)` == input$threat)
+    }
+    return(filtered_data)
+  })
+  
+  output$data_table <- renderTable({
+    filtered_data()
+  })
+  
+}
+
+shinyApp(ui = ui, server = server)
