@@ -2,7 +2,7 @@ library(shiny)
 library(dplyr)
 
 # URL para carregar os dados
-url <- "https://raw.githubusercontent.com/buenoas/aves_Brasil/main/2021.07.26%20CBRO%202021%20Zenodo%20Release.csv"
+url <- "https://raw.githubusercontent.com/buenoas/aves_Brasil/main/lista_vermelha_aves_ICMBio_2022.txt"
 
 # Função para carregar os dados
 load_data <- function() {
@@ -24,6 +24,16 @@ load_data <- function() {
   data$Notas..português. <- NULL
   data$Notes..English. <- NULL
   
+  # Adiciona as sinonímias e as categoria de ameaca
+  data$`Táxon IUCN 2022` = data$Nome.do.táxon..sem.autoria.
+  data$`Categoria IUCN 2022` <- "Pouco preocupante"
+  
+  data$`Táxon ICMBio 2022` = data$Nome.do.táxon..sem.autoria.  
+  data$`Categoria ICMBio 2022` <- "Pouco preocupante"
+  
+  data$`Táxon RS 2014` = data$Nome.do.táxon..sem.autoria.
+  data$`Categoria RS 2014` <- "Pouco preocupante"
+  
   # Renomeia algumas colunas
   colnames(data)[colnames(data) == "Categoria"] <- "Nível taxonômico"
   colnames(data)[colnames(data) == "Nome.do.táxon..sem.autoria."] <- "Táxon"
@@ -31,9 +41,6 @@ load_data <- function() {
   colnames(data)[colnames(data) == "English.Name"] <- "English name"
   colnames(data)[colnames(data) == "Espécie"] <- "Epíteto específico"
   colnames(data)[colnames(data) == "Subespécie"] <- "Epíteto subespecífico"
-  
-  # Adiciona a categoria de ameaca
-  data$`Categoria de ameaça (ICMBio 2022)` <- "Pouco preocupante"
   
   return(data)
   
