@@ -2,12 +2,12 @@ library(shiny)
 library(dplyr)
 
 # URL para carregar os dados
-url <- "https://raw.githubusercontent.com/buenoas/aves_Brasil/main/lista_vermelha_aves_ICMBio_2022.txt"
+url <- "https://raw.githubusercontent.com/buenoas/aves_Brasil/main/lista_aves_Brasil_CBRO_2021.txt"
 
 # Função para carregar os dados
 load_data <- function() {
   
-  data <- read.csv(url, sep = ";", stringsAsFactors = FALSE)
+  data <- read.csv(url, sep = "\t", encoding = "UTF-8", stringsAsFactors = FALSE)
   
   # Lista apenas as espécies e subespécies
   data <- data[which(data$Categoria == "Espécie" | data$Categoria ==  "Subespécie"), ]
