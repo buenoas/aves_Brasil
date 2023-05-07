@@ -1,39 +1,24 @@
-# Carrega os pacotes
+# Carrega o pacote
 library(rredlist)
-library(rgbif)
 
 # Chave de acesso ao API da IUCN
 token = "f2f5219c064c14dd5b649c74320c9dc6e889a535686dd9b8ec2adde960ac6582"
 
-# Extrai a lista de especies do Brasil avaliadas pela IUCN
-# A lista possui especies de todos os taxa
-spp_IUCN = rl_sp_country("BR", key = token)
+# Carrega as especies de aves do Brasil, segundo a BirdLife
+# A lista inclui "vagrant/accidental, uncertain and introduced country/territory records"
+birdlife = read.csv("https://raw.githubusercontent.com/buenoas/aves_Brasil/main/Brazil_full_spp_list_BirdLife_2022.txt",
+                    sep = "\t")
 
-# Consulta a classificacao taxonomica das especies (GBIF backbone)
-spp_IUCN_taxonomy = as.data.frame(
-  name_backbone_checklist(spp_IUCN$result$scientific_name))
+# Extrai o historico de avaliacao das especies
+spp_history = list()
 
-# Seleciona apenas a classe Aves
-spp_aves = subset(spp_IUCN_taxonomy, class == "Aves")
+for (i in 1:length(birdlife$Scientific.name)) {
 
-# Consulta o historico de avaliacoes da IUCN
-# Salva os resultados em uma lista
-history_aves = list()
-
-for (i in 1:6) {
-  
-  # Consulta o historico de avaliacoes da IUCN
-  history_IUCN = as.data.frame(rl_history(spp_aves$verbatim_name[i],
-                                          key = token))
-  
-  # Combina o resultado das avaliacoes com a taxonomia das especies
-  history_IUCN_taxonomy = cbind(history_IUCN, spp_aves[i, ])
-  
-  # Salva os resultados em uma lista
-  history_aves[[i]] = history_IUCN_taxonomy
+  spp_history[[i]] = as.data.frame(
+    rl_history(birdlife$Scientific.name[i], key = token))
   
   print(i)
-  
+    
 }
 
-history_aves = do.call(rbind, history_aves)
+spp_history = do.call(rbind, spp_history)
