@@ -1,0 +1,39 @@
+# Carrega os pacotes
+library(rredlist)
+library(rgbif)
+
+# Chave de acesso ao API da IUCN
+token = "f2f5219c064c14dd5b649c74320c9dc6e889a535686dd9b8ec2adde960ac6582"
+
+# Extrai a lista de especies do Brasil avaliadas pela IUCN
+# A lista possui especies de todos os taxa
+spp_IUCN = rl_sp_country("BR", key = token)
+
+# Consulta a classificacao taxonomica das especies (GBIF backbone)
+spp_IUCN_taxonomy = as.data.frame(
+  name_backbone_checklist(spp_IUCN$result$scientific_name))
+
+# Seleciona apenas a classe Aves
+spp_aves = subset(spp_IUCN_taxonomy, class == "Aves")
+
+# Consulta o historico de avaliacoes da IUCN
+# Salva os resultados em uma lista
+history_aves = list()
+
+for (i in 1:6) {
+  
+  # Consulta o historico de avaliacoes da IUCN
+  history_IUCN = as.data.frame(rl_history(spp_aves$verbatim_name[i],
+                                          key = token))
+  
+  # Combina o resultado das avaliacoes com a taxonomia das especies
+  history_IUCN_taxonomy = cbind(history_IUCN, spp_aves[i, ])
+  
+  # Salva os resultados em uma lista
+  history_aves[[i]] = history_IUCN_taxonomy
+  
+  print(i)
+  
+}
+
+history_aves = do.call(rbind, history_aves)
