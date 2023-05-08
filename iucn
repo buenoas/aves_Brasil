@@ -39,11 +39,9 @@ endemic_list = read.csv("https://raw.githubusercontent.com/buenoas/aves_Brasil/m
 
 # Adiciona a informacao se a especies esta na "core species list"
 # "core species list" = lista de especies do Country profile (Brasil)
-spp_history$core_list = NA
 spp_history$core_list = !is.na(match(spp_history$name,
                                      core_list$Scientific.name))
 
 # Adiciona a informacao se a especies esta na "endemic species list"
-spp_history$endemic_list = NA
 spp_history$endemic_list = !is.na(match(spp_history$name,
                                         endemic_list$Scientific.name))
