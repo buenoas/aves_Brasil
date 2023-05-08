@@ -1,3 +1,6 @@
+# Este codigo gerou o arquivo "iucn_assessment_history.txt", disponivel neste repositorio
+# Data da extracao dos dados: 2023-05-07
+
 # Carrega o pacote
 library(rredlist)
 
@@ -13,12 +16,12 @@ birdlife = read.csv("https://raw.githubusercontent.com/buenoas/aves_Brasil/main/
 spp_history = list()
 
 for (i in 1:length(birdlife$Scientific.name)) {
-
+  
   spp_history[[i]] = as.data.frame(
     rl_history(birdlife$Scientific.name[i], key = token))
   
   print(i)
-    
+  
 }
 
 spp_history = do.call(rbind, spp_history)
