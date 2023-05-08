@@ -25,3 +25,25 @@ for (i in 1:length(birdlife$Scientific.name)) {
 }
 
 spp_history = do.call(rbind, spp_history)
+
+#########################
+
+# Carrega os dados gerados pelo codigo acima e adiciona informacoes
+spp_history = read.csv("https://raw.githubusercontent.com/buenoas/aves_Brasil/main/iucn_assessment_history.txt", sep = "\t")
+
+# Importa a lista de aves do Brasil (Country profile), segundo BirdLife 2022
+core_list = read.csv("https://raw.githubusercontent.com/buenoas/aves_Brasil/main/Brazil_core_spp_list_BirdLife_2022.txt", sep = "\t")
+
+# Importa a lista de aves endemicas do Brasil (Country profile), segundo BirdLife 2022
+endemic_list = read.csv("https://raw.githubusercontent.com/buenoas/aves_Brasil/main/Brazil_endemic_spp_list_BirdLife_2022.txt", sep = "\t")
+
+# Adiciona a informacao se a especies esta na "core species list"
+# "core species list" = lista de especies do Country profile (Brasil)
+spp_history$core_list = NA
+spp_history$core_list = !is.na(match(spp_history$name,
+                                     core_list$Scientific.name))
+
+# Adiciona a informacao se a especies esta na "endemic species list"
+spp_history$endemic_list = NA
+spp_history$endemic_list = !is.na(match(spp_history$name,
+                                        endemic_list$Scientific.name))
