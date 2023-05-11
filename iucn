@@ -45,3 +45,31 @@ spp_history$core_list = !is.na(match(spp_history$name,
 # Adiciona a informacao se a especies esta na "endemic species list"
 spp_history$endemic_list = !is.na(match(spp_history$name,
                                         endemic_list$Scientific.name))
+
+#########################
+
+# AVALIACAO DA IUCN DAS ESPECIES COM OCORRENCIA NO BRASIL
+# Obtem a lista de especies com ocorrencia no Brasil
+iucn_br_spp = rl_sp_country("BR", key = token)$result
+
+# Cria uma lista vazia
+iucn_br_taxonomy_list = list()
+
+# Extrai os dados da IUCN para todas as especies com ocorrencia no Brasil
+for (i in 1:nrow(iucn_br_spp)) {
+  
+  iucn_br_taxonomy_list[[i]] = rl_search(id = iucn_br_spp$taxonid[i],
+                                         key = token)$result
+  
+  print(i)
+  
+}
+
+# Converte a lista em uma data frame
+iucn_br_taxonomy = do.call(rbind, iucn_br_taxonomy_list)
+
+# Retira a especie que aparece duas vezes
+iucn_br_taxonomy = iucn_br_taxonomy[-which(iucn_br_taxonomy$taxonid == 60201)[2], ]
+
+# Visualiza as primeiras seis linhas da data frame
+head(iucn_br_taxonomy)
