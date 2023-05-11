@@ -47,8 +47,8 @@ spp_history$endemic_list = !is.na(match(spp_history$name,
                                         endemic_list$Scientific.name))
 
 #########################
-
 # AVALIACAO DA IUCN DAS ESPECIES COM OCORRENCIA NO BRASIL
+
 # Obtem a lista de especies com ocorrencia no Brasil
 iucn_br_spp = rl_sp_country("BR", key = token)$result
 
@@ -73,3 +73,31 @@ iucn_br_taxonomy = iucn_br_taxonomy[-which(iucn_br_taxonomy$taxonid == 60201)[2]
 
 # Visualiza as primeiras seis linhas da data frame
 head(iucn_br_taxonomy)
+
+#########################
+# EXTRAI O HISTORICO DE AVALIACAO DE TODAS AS ESPECIES AVALIADAS COM OCORRENCIA NO BRASIL
+
+# Carrega o pacote
+library(rredlist)
+
+# Chave de acesso ao API da IUCN
+token = "f2f5219c064c14dd5b649c74320c9dc6e889a535686dd9b8ec2adde960ac6582"
+
+# Importa a lista de especies do Brasil, segundo a IUCN
+spp_iucn = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/iucn_br_taxonomy.txt", sep = "\t")
+
+# Extrai o historico de avaliacao de todas as especies avaliadas com ocorrencia no Brasil
+spp_history_list = list()
+
+for (i in 1:length(spp_iucn$scientific_name)) {
+  
+  spp_history_list[[i]] = as.data.frame(
+    rl_history(spp_iucn$scientific_name[i], key = token))
+  
+  print(i)
+  
+}
+
+spp_history = do.call(rbind, spp_history_list)
+head(spp_history)
+tail(spp_history)
