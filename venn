@@ -1,0 +1,67 @@
+############################################################
+### PRODUZ O DIAGRAMA DE VENN ##############################
+### RECORRENCIA DAS ESPECIES EM DIFERENTES ESCALAS##########
+### GLOBAL, NACIONAL E ESTADUAL (TODOS OS ESTADOS JUNTOS)###
+############################################################
+
+# Carrega os pacotes
+library(VennDiagram)
+library(readxl)
+
+# Importa a lista de especies ameacadas do Brasil (2022)
+br2022 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_brasil_aves.xlsx", sheet = 2))
+
+# Remove especies extintas
+br2022 = br2022[-which(br2022$category == "RE" |
+                         br2022$category == "EW" |
+                         br2022$category == "EX"), ]
+
+# Importa a lista de especies ameacadas da BirdLife (2022)
+bl2022 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_brasil_aves.xlsx", sheet = 7))
+
+# Remove especies quase ameacadas, extintas e deficiente de dados
+bl2022 = bl2022[-which(bl2022$category == "NT" | 
+                         bl2022$category == "EW" |
+                         bl2022$category == "EX" |
+                         bl2022$category == "DD"), ]
+
+# Importa a lista de especies ameacadas de MG (1995)
+mg1995 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_brasil_aves.xlsx", sheet = 9))
+
+# Prepare a palette of 3 colors with R colorbrewer:
+myCol <- c("#b3e2cd", "#fdcdac", "#cbd5e8")
+
+# Chart
+venn.diagram(
+  x = list(br2022$scientificNameCBRO2021,
+           bl2022$scientificNameCBRO2021,
+           mg1995$scientificNameCBRO2021),
+  category.names = c("Brazil" , "Global" , "State"),
+  filename = 'especies_ameacadas_escalas.png',
+  output = TRUE,
+  
+  # Output features
+  imagetype = "png",
+  height = 480*3, 
+  width = 480*3, 
+  resolution = 900,
+  compression = "lzw",
+  
+  # Circles
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  # Numbers
+  cex = .6,
+  fontface = "bold",
+  fontfamily = "sans",
+  
+  # Set names
+  cat.cex = 0.6,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(-27, 27, 135),
+  cat.dist = c(0.055, 0.055, 0.085),
+  cat.fontfamily = "sans",
+  rotation = 1)
