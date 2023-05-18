@@ -1,8 +1,8 @@
-############################################################
-### PRODUZ O DIAGRAMA DE VENN ##############################
-### RECORRENCIA DAS ESPECIES EM DIFERENTES ESCALAS##########
-### GLOBAL, NACIONAL E ESTADUAL (TODOS OS ESTADOS JUNTOS)###
-############################################################
+#############################################################
+### PRODUZ O DIAGRAMA DE VENN ###############################
+### RECORRENCIA DAS ESPECIES EM DIFERENTES ESCALAS ##########
+### GLOBAL, NACIONAL E ESTADUAL (TODOS OS ESTADOS JUNTOS) ###
+#############################################################
 
 # Carrega os pacotes
 library(VennDiagram)
