@@ -36,7 +36,7 @@ venn.diagram(
   x = list(br2022$scientificNameCBRO2021,
            bl2022$scientificNameCBRO2021,
            mg1995$scientificNameCBRO2021),
-  category.names = c("Brazil" , "Global" , "State"),
+  category.names = c("National" , "Global" , "State"),
   filename = 'especies_ameacadas_escalas.png',
   output = TRUE,
   
