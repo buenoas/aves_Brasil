@@ -1,0 +1,330 @@
+rm(list = ls())
+
+# ANALISE DAS AVES AMEACADAS DE EXTINCAO
+
+# Carrega os pacotes
+library(tidyverse)
+library(stringr)
+library(readxl)
+
+# IMPORTA OS DADOS COMPILADOS PELO LUCAS
+ba = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/BA.tsv",
+              sep = "\t")
+
+es2005 = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/ES_2005.tsv",
+                  sep = "\t")
+
+es2022 = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/ES_2022.tsv",
+                  sep = "\t")
+
+mg1995 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/mg1995.csv")
+
+mg2010 = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/MG.csv")
+
+pa = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/PA.tsv",
+              sep = "\t")
+
+pr2004 = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/PR_2004.tsv",
+                  sep = "\t")
+
+pr2018 = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/PR_2018.tsv",
+                  sep = "\t")
+
+rj = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/RJ.tsv",
+              sep = "\t")
+
+rs2002 = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/RS_2002.tsv",
+                  sep = "\t", header = FALSE)
+
+rs2014 = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/RS_2014.tsv",
+                  sep = "\t")
+
+sc = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/SC_2009.tsv",
+              sep = "\t")
+
+sp2010 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_SP.xlsx", sheet = 1))
+
+sp2014 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_SP.xlsx", sheet = 2))
+
+sp2018 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_SP.xlsx", sheet = 3))
+
+# IMPORTA OS DADOS COMPILADOS PELO LUCAS
+ba %>% head()
+es2005 %>% head()
+es2022 %>% head()
+mg1995 %>% head()
+mg2010 %>% head()
+pa %>% head()
+pr2004 %>% head()
+pr2018 %>% head()
+rj %>% head()
+rs2002 %>% head()
+rs2014 %>% head()
+sc %>% head()
+sp2010 %>% head()
+sp2014 %>% head()
+sp2018 %>% head()
+
+# Organiza os dados dos estados
+# Bahia
+BA = ba
+BA$scientificNameCBRO2021 = NA
+BA$scientificNameOriginal = ba$Táxon
+BA$category = ba$Categoria
+BA$scale = "BA"
+BA$year = "2017"
+BA = BA[, 5:ncol(BA)]
+
+# Espirito Santo 2005
+ES_2005 = es2005
+ES_2005$scientificNameCBRO2021 = NA
+ES_2005$scientificNameOriginal = es2005$ESPÉCIE
+ES_2005$category = es2005$STATUS
+ES_2005$scale = "ES"
+ES_2005$year = "2005"
+ES_2005 = ES_2005[, 8:ncol(ES_2005)]
+
+# Espirito Santo 2022
+ES_2022 = es2022
+ES_2022$scientificNameCBRO2021 = NA
+ES_2022$scientificNameOriginal = es2022$ESPÉCIE.OU.SUBESPÉCIE
+ES_2022$category = es2022$CATEGORIA.DE.AMEAÇA
+ES_2022$scale = "ES"
+ES_2022$year = "2022"
+ES_2022 = ES_2022[, 7:ncol(ES_2022)]
+
+# Minas Gerais 1995
+MG_1995 = mg1995[, 1:5]
+
+# Minas Gerais 2010
+MG_2010 = mg2010[, 1:5]
+MG_2010$scientificNameCBRO2021 = NA
+MG_2010$scientificNameOriginal = mg2010$Espécie
+MG_2010$category = mg2010$Categoria.de.Ameaça
+MG_2010$scale = "MG"
+MG_2010$year = "2010"
+MG_2010 = MG_2010[, 6:ncol(MG_2010)]
+
+# Para
+PA = pa
+PA$scientificNameCBRO2021 = NA
+PA$scientificNameOriginal = pa$Nome.Científico
+PA$category = pa$Categoria
+PA$scale = "PA"
+PA$year = "2007"
+PA = PA[, 9:ncol(PA)]
+
+# Parana 2004
+PR_2004 = pr2004
+PR_2004$scientificNameCBRO2021 = NA
+PR_2004$scientificNameOriginal = pr2004$Nome.científico
+PR_2004$category = pr2004$Categoria
+PR_2004$scale = "PR"
+PR_2004$year = "2004"
+PR_2004 = PR_2004[, 4:ncol(PR_2004)]
+
+# Parana 2018
+PR_2018 = pr2018
+PR_2018$scientificNameCBRO2021 = NA
+PR_2018$scientificNameOriginal = pr2018$Nome.científico
+PR_2018$category = pr2018$Categoria
+PR_2018$scale = "PR"
+PR_2018$year = "2018"
+PR_2018 = PR_2018[, 4:ncol(PR_2018)]
+
+# Rio de Janeiro
+RJ = rj
+RJ$scientificNameCBRO2021 = NA
+RJ$scientificNameOriginal = rj$Especie
+RJ$category = rj$Categoria
+RJ$scale = "RJ"
+RJ$year = "1997"
+RJ = RJ[, 9:ncol(RJ)]
+
+# Rio Grande do Sul 2002
+RS_2002 = rs2002
+RS_2002$scientificNameCBRO2021 = NA
+RS_2002$scientificNameOriginal = rs2002$V1
+RS_2002$category = rs2002$V3
+RS_2002$scale = "RS"
+RS_2002$year = "2002"
+RS_2002 = RS_2002[, 4:ncol(RS_2002)]
+
+# Rio Grande do Sul 2014
+RS_2014 = rs2014
+RS_2014$scientificNameCBRO2021 = NA
+RS_2014$scientificNameOriginal = rs2014$NOME.CIENTÍFICO
+RS_2014$category = rs2014$STATUS
+RS_2014$scale = "RS"
+RS_2014$year = "2014"
+RS_2014 = RS_2014[, 10:ncol(RS_2014)]
+
+# Santa Catarina
+SC = sc
+SC$scientificNameCBRO2021 = NA
+SC$scientificNameOriginal = sc$Espécie
+SC$category = sc$Categoria
+SC$scale = "SC"
+SC$year = "2011"
+SC = SC[, 8:ncol(SC)]
+
+# Sao Paulo 2010
+SP_2010 = sp2010
+SP_2010$scientificNameCBRO2021 = NA
+SP_2010$scientificNameOriginal = SP_2010$speciesCBRO2021
+SP_2010$category = word(SP_2010$x, -1)
+SP_2010$scale = "SP"
+SP_2010$year = "2010"
+SP_2010$x = NULL
+SP_2010$speciesCBRO2021 = NULL
+
+# Sao Paulo 2014
+SP_2014 = sp2014
+SP_2014$scientificNameCBRO2021 = NA
+SP_2014$scientificNameOriginal = SP_2014$speciesCBRO2021
+SP_2014$category = NA
+SP_2014$scale = "SP"
+SP_2014$year = "2014"
+SP_2014$x = NULL
+SP_2014$speciesCBRO2021 = NULL
+
+# Sao Paulo 2018
+SP_2018 = sp2018
+SP_2018$scientificNameCBRO2021 = NA
+SP_2018$scientificNameOriginal = SP_2018$speciesCBRO2021
+SP_2018$category = word(SP_2018$x, -1)
+SP_2018$scale = "SP"
+SP_2018$year = "2018"
+SP_2018$x = NULL
+SP_2018$speciesCBRO2021 = NULL
+
+# Junta as listas dos estados
+estados = rbind(BA,
+                ES_2005,
+                ES_2022,
+                MG_1995,
+                MG_2010,
+                PA,
+                PR_2004,
+                PR_2018,
+                RJ,
+                RS_2002,
+                RS_2014,
+                SC,
+                SP_2010,
+                SP_2014,
+                SP_2018)
+
+# Arruma os nomes cientificos
+estados$scientificNameOriginal = str_squish(estados$scientificNameOriginal)
+
+# Corrige o nome de algumas especie
+estados$scientificNameOriginal[estados$scientificNameOriginal == "Thannophilidae nigropectus"] = "Thamnophilus nigropictus"
+estados$scientificNameOriginal[estados$scientificNameOriginal == "Tangara Seledon (Müller, 1776)"] = "Tangara seledon (Müller, 1776)"
+estados$scientificNameOriginal[estados$scientificNameOriginal == "Porzana Spiloptera Durnfornd, 1877"] = "Porzana spiloptera Durnfornd, 1877"
+estados$scientificNameOriginal[estados$scientificNameOriginal == "[Myiothlypis leucophrys Pelzeln, 1868]"] = "Myiothlypis leucophrys Pelzeln, 1868"
+estados$scientificNameOriginal[estados$scientificNameOriginal == "Phibaltura Flavirostris Vieillot, 1816"] = "Phibaltura flavirostris Vieillot, 1816"
+
+# Identifica as linhas com nome de familia
+estados = estados[-which(grepl("idae", estados$scientificNameOriginal)), ]
+estados = estados[-which(grepl("formes", estados$scientificNameOriginal)), ]
+
+# Retira o nome dos autores usando como separador "("
+estados$scientificNameOriginal = str_squish(word(estados$scientificNameOriginal, sep = "\\(", 1))
+
+# Identifica a posicao da segunda letra maiuscula
+# Isso indica onde comeca o nome do autor
+# Para substituir o nome do autor por um simbolo
+# O simbolo sera usado para cortar o nome do autor e o ano
+
+# Nomes com autor e ano
+positions = which(grepl("[0-9]", estados$scientificNameOriginal))
+
+# Localizacao do corte nos nomes para remover autor e ano
+location = sapply(strsplit(estados$scientificNameOriginal, ""),
+                  function(x) which(x %in% LETTERS)[2])
+
+# Substitui a inicial do autor por "_"
+substr(estados$scientificNameOriginal[positions], location[positions], location[positions]) = "_"
+
+# Remove autor e ano
+estados$scientificNameOriginal = 
+  str_to_sentence( # Apenas primeira letra maiuscula
+    str_squish( # Remove espacos desnecessarios
+      word(estados$scientificNameOriginal, 1, sep = "_"))) # Remove autor e ano
+
+# Corrige mais um nome
+estados$scientificNameOriginal[estados$scientificNameOriginal == "Saltator similis d'"] = "Saltator similis"
+
+# Atualiza o nome das especies conforme CBRO 2021
+cbro = read.csv("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/padronizacao_nomes_estados_CBRO2021.csv")
+
+estados$scientificNameCBRO2021 = cbro$especieCBRO[match(estados$scientificNameOriginal,
+                                                        cbro$especie)]
+
+# Adiciona as especies de Sao Paulo
+rows_SP = which(is.na(estados$scientificNameCBRO2021))
+estados[rows_SP, 1] = estados[rows_SP, 2]
+
+# Padroniza as categorias de ameaca
+estados$category = str_to_upper(str_squish(estados$category))
+estados$category[estados$category == "CR-PEW"] = "CR(PEW)"
+estados$category[estados$category == "CRITICAMENTE EM PERIGO"] = "CR"
+estados$category[estados$category == "EM PERIGO"] = "EN"
+estados$category[estados$category == "VULNERÁVEL"] = "VU"
+estados$category[estados$category == "CR(RE)"] = "RE"
+estados$category[estados$category == "EM"] = "EN"
+estados$category[estados$category == "EP"] = "EN"
+estados$category[estados$category == "CP"] = "CR"
+estados$category[estados$category == "PE"] = "CR(PE)"
+estados$category[estados$category == "PROVAVELMENTE EXTINTA"] = "CR(PE)"
+estados$category[estados$category == "REGIONALMENTE EXTINTA"] = "RE"
+estados$category[estados$category == "AVULNERÁVEL"] = "VU"
+
+# Seleciona apenas as especies ameacadas
+# VU, EN, CR, CR(PEW), CR(PE)
+estados =
+  estados[which(estados$category == "VU" |
+                  estados$category == "EN" |
+                  estados$category == "CR" |
+                  estados$category == "CR(PEW)" |
+                  estados$category == "CR(PE)"), ]
+
+# ANALISES
+# AINDA FALTA ATUALIZAR A LISTA DE SAO PAULO
+estados$occurrence = 1
+
+x = as.data.frame(tapply(
+  estados$occurrence,
+  list(estados$scientificNameCBRO2021,
+       paste(estados$scale, estados$year, sep = "_")),
+  sum))
+
+# Converte NA em zero
+x[is.na(x)] = 0
+
+# Remove listas antigas
+x$ES_2005 = NULL
+x$MG_1995 = NULL
+x$PR_2004 = NULL
+x$RS_2002 = NULL
+x$SP_2010 = NULL
+x$SP_2014 = NULL
+
+# Visualiza a tabela
+rbind(head(x),
+      tail(x))
+
+################################################
+### EXTRACAO CATEGORIA DE AMEACA DO WIKIAVES ###
+################################################
+
+url_base = "https://www.wikiaves.com.br/wiki/"
+nome_popular = "papagaio-charao"
+url = paste0(url_base, nome_popular)
+
+p1 = readLines(url)
+p2 = p1[grepl("(IUCN 3.1)", p1)]
+p3 = word(p2, 2, sep = "0.9em\"><b>")
+p4 = word(p3, 1, sep = "</b><img src")
+p4
