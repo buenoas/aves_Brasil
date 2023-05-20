@@ -1,11 +1,11 @@
-rm(list = ls())
-
 # ANALISE DAS AVES AMEACADAS DE EXTINCAO
 
 # Carrega os pacotes
 library(tidyverse)
 library(stringr)
+library(stringi)
 library(readxl)
+library(VennDiagram)
 
 # IMPORTA OS DADOS COMPILADOS PELO LUCAS
 ba = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/BA.tsv",
@@ -42,11 +42,11 @@ rs2014 = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificac
 sc = read.csv("https://raw.githubusercontent.com/LucasPHernandes/quantificacao_aves_brasil/main/SC_2009.tsv",
               sep = "\t")
 
-sp2010 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_SP.xlsx", sheet = 1))
+sp2010 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/lista_SP_2010.csv")
 
-sp2014 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_SP.xlsx", sheet = 2))
+sp2014 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/lista_SP_2014.csv")
 
-sp2018 = as.data.frame(read_xlsx("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/listas_SP.xlsx", sheet = 3))
+sp2018 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/lista_SP_2018.csv")
 
 # IMPORTA OS DADOS COMPILADOS PELO LUCAS
 ba %>% head()
@@ -257,7 +257,7 @@ estados$scientificNameOriginal =
 estados$scientificNameOriginal[estados$scientificNameOriginal == "Saltator similis d'"] = "Saltator similis"
 
 # Atualiza o nome das especies conforme CBRO 2021
-cbro = read.csv("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/padronizacao_nomes_estados_CBRO2021.csv")
+cbro = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/padronizacao_nomes_estados_CBRO2021.csv")
 
 estados$scientificNameCBRO2021 = cbro$especieCBRO[match(estados$scientificNameOriginal,
                                                         cbro$especie)]
@@ -281,23 +281,43 @@ estados$category[estados$category == "PROVAVELMENTE EXTINTA"] = "CR(PE)"
 estados$category[estados$category == "REGIONALMENTE EXTINTA"] = "RE"
 estados$category[estados$category == "AVULNERÁVEL"] = "VU"
 
+
+################################
+### LISTAS NACIONAL E GLOBAL ###
+################################
+
+# Importa as listas
+brasil2014 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/lista_Brasil_2014.csv")
+
+brasil2022 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/lista_Brasil_2022.csv")
+
+birdlife2022 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/lista_BirdLife_2022.csv")
+
+# Juntas a lista dos estados com as do Brasil e do mundo
+listas = rbind(brasil2014[, 1:5],
+               brasil2022[, 1:5],
+               birdlife2022[, 1:5],
+               estados)
+
 # Seleciona apenas as especies ameacadas
 # VU, EN, CR, CR(PEW), CR(PE)
-estados =
-  estados[which(estados$category == "VU" |
-                  estados$category == "EN" |
-                  estados$category == "CR" |
-                  estados$category == "CR(PEW)" |
-                  estados$category == "CR(PE)"), ]
+listas =
+  listas[which(listas$category == "VU" |
+                 listas$category == "EN" |
+                 listas$category == "CR" |
+                 listas$category == "CR(PEW)" |
+                 listas$category == "CR(PE)"), ]
 
-# ANALISES
-# AINDA FALTA ATUALIZAR A LISTA DE SAO PAULO
-estados$occurrence = 1
+################
+### ANALISES ###
+################
+
+listas$occurrence = 1
 
 x = as.data.frame(tapply(
-  estados$occurrence,
-  list(estados$scientificNameCBRO2021,
-       paste(estados$scale, estados$year, sep = "_")),
+  listas$occurrence,
+  list(listas$scientificNameCBRO2021,
+       paste(listas$scale, listas$year, sep = "_")),
   sum))
 
 # Converte NA em zero
@@ -310,21 +330,102 @@ x$PR_2004 = NULL
 x$RS_2002 = NULL
 x$SP_2010 = NULL
 x$SP_2014 = NULL
+x$Brazil_2014 = NULL
 
 # Visualiza a tabela
 rbind(head(x),
       tail(x))
 
+# Diagrama de Venn
+# Prepare a palette of 3 colors with R colorbrewer:
+myCol <- c("#b3e2cd", "#fdcdac", "#cbd5e8")
+
+# Seleciona os dados de entrada
+listas$lista = paste(listas$scale, listas$year, sep = "_")
+
+rowsToRemove = which(listas$lista == "Brazil_2014" |
+                       listas$lista == "ES_2005" |
+                       listas$lista == "MG_1995" |
+                       listas$lista == "PR_2004" |
+                       listas$lista == "RS_2002" |
+                       listas$lista == "SP_2010")
+
+listasVenn = listas[-rowsToRemove, ]
+
+global = unique(
+  listasVenn[which(listasVenn$lista == "Global_2022"), "scientificNameCBRO2021"])
+national = unique(
+  listasVenn[which(listasVenn$lista == "Brazil_2022"), "scientificNameCBRO2021"])
+state = unique(
+  listasVenn[which(listasVenn$lista != "Global_2022" |
+                     listasVenn$lista != "Brazil_2022"), "scientificNameCBRO2021"])
+
+# Chart
+venn.diagram(
+  x = list(state,
+           national,
+           global),
+  category.names = c("National" , "Global" , "State"),
+  filename = 'especies_ameacadas_escalas.png',
+  output = TRUE,
+  
+  # Output features
+  imagetype = "png",
+  height = 480*3, 
+  width = 480*3, 
+  resolution = 900,
+  compression = "lzw",
+  
+  # Circles
+  lwd = 2,
+  lty = 'blank',
+  fill = myCol,
+  
+  # Numbers
+  cex = .6,
+  fontface = "bold",
+  fontfamily = "sans",
+  
+  # Set names
+  cat.cex = 0.6,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(-27, 27, 135),
+  cat.dist = c(0.055, 0.055, 0.085),
+  cat.fontfamily = "sans",
+  rotation = 1)
+
+
 ################################################
 ### EXTRACAO CATEGORIA DE AMEACA DO WIKIAVES ###
 ################################################
 
-url_base = "https://www.wikiaves.com.br/wiki/"
-nome_popular = "papagaio-charao"
-url = paste0(url_base, nome_popular)
+# Importa a lista de aves do WikiAves
+wiki = read.csv("C:/Users/Anderson/OneDrive/Documents/Pesquisa/Projetos/Especies_ameacadas/wikiaves.csv",
+                encoding = "UTF-8")
 
-p1 = readLines(url)
-p2 = p1[grepl("(IUCN 3.1)", p1)]
-p3 = word(p2, 2, sep = "0.9em\"><b>")
-p4 = word(p3, 1, sep = "</b><img src")
-p4
+# Remove caracteres especiais do nome comum
+wiki$Nome_Comum = stri_trans_general(str = wiki$Nome_Comum,
+                                     id = "Latin-ASCII") 
+
+# Loop para extracao de dados do WikiAves
+# Categoria de ameaca de acordo com a IUCN
+
+wiki$Categoria = NA
+
+for (i in 1:length(wiki$Nome_Comum)) {
+  
+  url_base = "https://www.wikiaves.com.br/wiki/"
+  nome_popular = wiki$Nome_Comum[i]
+  url = paste0(url_base, nome_popular)
+  
+  p1 = readLines(url)
+  p2 = p1[grepl("(IUCN 3.1)", p1)]
+  p3 = word(p2, 2, sep = "0.9em\"><b>")
+  p4 = word(p3, 1, sep = "</b><img src")
+  
+  wiki$Categoria[i] = p4
+  
+  print(i)
+  
+}
