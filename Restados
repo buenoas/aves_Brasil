@@ -230,7 +230,8 @@ estados = estados[-which(grepl("idae", estados$scientificNameOriginal)), ]
 estados = estados[-which(grepl("formes", estados$scientificNameOriginal)), ]
 
 # Retira o nome dos autores usando como separador "("
-estados$scientificNameOriginal = str_squish(word(estados$scientificNameOriginal, sep = "\\(", 1))
+estados$scientificNameOriginal = str_squish(word(estados$scientificNameOriginal,
+                                                 sep = "\\(", 1))
 
 # Identifica a posicao da segunda letra maiuscula
 # Isso indica onde comeca o nome do autor
@@ -299,6 +300,21 @@ listas = rbind(brasil2014[, 1:5],
                birdlife2022[, 1:5],
                estados)
 
+# Adiciona a autoridade responsavel pela lista
+listas$authority = listas$scale
+listas$authority[listas$authority == "Global"] = "BirdLife"
+
+# Ajusta a scale para global, national, state
+listas$scale = "state"
+listas$scale[which(listas$authority == "Brazil")] = "national"
+listas$scale[which(listas$authority == "BirdLife")] = "global"
+
+# Adiciona uma coluna com o nome da lista
+listas$redlist = paste(listas$authority, listas$year, sep = "_")
+
+# Reordena as colunas
+listas = listas[, c(2, 1, 3, 4, 6, 5, 7)]
+
 # Seleciona apenas as especies ameacadas
 # VU, EN, CR, CR(PEW), CR(PE)
 listas =
@@ -307,6 +323,16 @@ listas =
                  listas$category == "CR" |
                  listas$category == "CR(PEW)" |
                  listas$category == "CR(PE)"), ]
+
+# Retira as listas antigas
+listas =
+  listas[which(listas$redlist != "ES_2005" &
+                 listas$redlist != "MG_1995" &
+                 listas$redlist != "PR_2004" &
+                 listas$redlist != "RS_2002" &
+                 listas$redlist != "SP_2010" &
+                 listas$redlist != "SP_2014" &
+                 listas$redlist != "Brazil_2014"), ]
 
 ################
 ### ANALISES ###
@@ -317,56 +343,50 @@ listas$occurrence = 1
 x = as.data.frame(tapply(
   listas$occurrence,
   list(listas$scientificNameCBRO2021,
-       paste(listas$scale, listas$year, sep = "_")),
+       listas$redlist),
   sum))
 
 # Converte NA em zero
 x[is.na(x)] = 0
 
-# Remove listas antigas
-x$ES_2005 = NULL
-x$MG_1995 = NULL
-x$PR_2004 = NULL
-x$RS_2002 = NULL
-x$SP_2010 = NULL
-x$SP_2014 = NULL
-x$Brazil_2014 = NULL
-
 # Visualiza a tabela
 rbind(head(x),
       tail(x))
+
+dim(x)
+
+# Recorrencia em listas
+recorrencia = cbind(x$BirdLife_2022,
+                    x$Brazil_2022,
+                    rowSums(x[, -c(2, 3)]))
+
+# Transforma os dados em presenca-ausencia
+recorrencia = as.data.frame(ifelse(recorrencia > 0, 1, 0))
+
+# Renomeia as colunas
+colnames(recorrencia) = c("Global", "National", "State")
+
+# Verifica a recorrencia das especies em diferentes escalas
+# 1 ocorre am apenas 1 escala (global ou nacional ou estadual)
+# 3 ocorre am 3 escalas (global e nacional e estadual)
+table(rowSums(recorrencia))
 
 # Diagrama de Venn
 # Prepare a palette of 3 colors with R colorbrewer:
 myCol <- c("#b3e2cd", "#fdcdac", "#cbd5e8")
 
 # Seleciona os dados de entrada
-listas$lista = paste(listas$scale, listas$year, sep = "_")
-
-rowsToRemove = which(listas$lista == "Brazil_2014" |
-                       listas$lista == "ES_2005" |
-                       listas$lista == "MG_1995" |
-                       listas$lista == "PR_2004" |
-                       listas$lista == "RS_2002" |
-                       listas$lista == "SP_2010")
-
-listasVenn = listas[-rowsToRemove, ]
-
-global = unique(
-  listasVenn[which(listasVenn$lista == "Global_2022"), "scientificNameCBRO2021"])
-national = unique(
-  listasVenn[which(listasVenn$lista == "Brazil_2022"), "scientificNameCBRO2021"])
-state = unique(
-  listasVenn[which(listasVenn$lista != "Global_2022" |
-                     listasVenn$lista != "Brazil_2022"), "scientificNameCBRO2021"])
+global = rownames(recorrencia)[recorrencia$Global > 0]
+national = rownames(recorrencia)[recorrencia$National > 0]
+state = rownames(recorrencia)[recorrencia$State > 0]
 
 # Chart
 venn.diagram(
-  x = list(state,
-           national,
-           global),
+  x = list(national,
+           global,
+           state),
   category.names = c("National" , "Global" , "State"),
-  filename = 'especies_ameacadas_escalas.png',
+  filename = "especies_ameacadas_escalas.png",
   output = TRUE,
   
   # Output features
