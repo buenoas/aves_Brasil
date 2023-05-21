@@ -1,5 +1,3 @@
-rm(list = ls())
-
 # ANALISE DAS AVES AMEACADAS DE EXTINCAO
 
 # Carrega os pacotes
@@ -417,6 +415,13 @@ venn.diagram(
   cat.fontfamily = "sans",
   rotation = 1)
 
+# Aumento e reducao de especies ameacadas
+# Brazil (2014-2022): 232 - 256
+# ES (2005-2022): 81 - 144
+# MG (1995-2010): 61 - 113
+# PR (2004-2018): 66 - 107
+# RS (2002-2014): 126 - 91
+# SP (2010-2018): 171 - 125 # Pulamos 2014 porque nao ha mencao a categoria de ameaca
 
 ################################################
 ### EXTRACAO CATEGORIA DE AMEACA DO WIKIAVES ###
@@ -455,3 +460,7 @@ for (i in 1:length(wiki$Nome_Comum)) {
 dim(wiki)
 rbind(head(wiki),
       tail(wiki))
+
+# Importa a lista do WikiAves com a categoria de ameaca
+wiki = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/wikiaves_iucn.csv")
+head(wiki)
