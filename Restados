@@ -289,6 +289,8 @@ estados$category[estados$category == "AVULNERÁVEL"] = "VU"
 
 # Importa as listas
 brasil2014 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/lista_Brasil_2014.csv")
+# Remove a especie duplicada
+brasil2014 = brasil2014[-which(brasil2014$scientificNameOriginal == "Pyrrhura lepida lepida (Wagler, 1832)"), ]
 
 brasil2022 = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/lista_Brasil_2022.csv")
 
@@ -463,4 +465,22 @@ rbind(head(wiki),
 
 # Importa a lista do WikiAves com a categoria de ameaca
 wiki = read.csv("https://raw.githubusercontent.com/buenoas/especies_ameacadas/main/wikiaves_iucn.csv")
-head(wiki)
+
+# Importa a lista da BirdLife com a categoria de ameaca
+bl_iucn = as.data.frame(read_xlsx("C:/Users/Anderson/Downloads/HBW-BirdLife_Checklist_v7_Dec22/HBW_BirdLife_List of birds_v7.xlsx", sheet = 1))
+
+spp_sem_categoria = data.frame(especie = wiki$Especie[which(is.na(wiki$Categoria))],
+                               categoria = NA)
+
+spp_sem_categoria$categoria = bl_iucn$`2022 IUCN Red List category`[match(spp_sem_categoria$especie,
+                                                                          bl_iucn$`Scientific name`)]
+
+spp_sem_categoria = na.omit(spp_sem_categoria)
+
+wiki$Categoria_BirdLife = spp_sem_categoria$categoria[match(wiki$Especie,
+                                                            spp_sem_categoria$especie)]
+
+wiki$Categoria_paste = gsub("NA", "", paste0(wiki$Categoria, wiki$Categoria_BirdLife))
+
+wiki$Categoria_paste[wiki$Especie == "Chroicocephalus ridibundus"] = "LC"
+wiki$Categoria_paste[wiki$Especie == "Saltatricula multicolor"] = "LC"
